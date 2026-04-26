@@ -1,5 +1,4 @@
-﻿using System;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
@@ -38,7 +37,9 @@ public class PlayerHandler : MonoBehaviour
 
     private void Awake()
     {
-        _playerInventory = new PlayerInventory(_playerData);
+        // TODO check for transferred presence.
+        _playerData = PlayerData.Deserialize(DDOLTransmitter.Instance.RetrieveTransferredPlayer());
+        _playerInventory = new PlayerInventory();
         _characterController = GetComponent<CharacterController>();
         _animator = GetComponent<Animator>();
         _mainCamera = GameObject.Find("Camera").GetComponent<Camera>();

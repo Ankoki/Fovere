@@ -1,7 +1,21 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 
-public abstract class Inventory
+public abstract class Inventory : DataStorage
 {
+
+    public static Inventory Deserialize(Dictionary<string, object> data)
+    {
+        var type = data.GetValueOrDefault("inventory_type", "player");
+        Inventory result;
+        if ((string) type == "player")
+        {
+            result = new PlayerInventory();
+        }
+        else return null;
+        return result;
+    }
+    
     private Item[] _items;
 
     private void Awake()
@@ -96,6 +110,12 @@ public abstract class Inventory
                 _items[index] = null;
             index++;
         });
+    }
+
+    public override Dictionary<string, object> Serialize()
+    {
+        var data = new Dictionary<string, object>();
+        return data;
     }
 
     public abstract int GetInventorySize();

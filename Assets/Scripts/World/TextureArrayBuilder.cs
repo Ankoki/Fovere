@@ -8,7 +8,7 @@ public class TextureArrayBuilder : MonoBehaviour
     public Texture2DArray TextureArray;
     public int TextureCount;
 
-    private Dictionary<string, int> _textureIndices = new();
+    private readonly Dictionary<string, int> _textureIndices = new();
 
     private const int TileSize = 256;
 
@@ -30,13 +30,9 @@ public class TextureArrayBuilder : MonoBehaviour
         for (var i = 0; i < textures.Length; i++)
         {
             var tex = textures[i];
-
             Graphics.CopyTexture(tex, 0, 0, TextureArray, i, 0);
-
-            // 🔑 CRITICAL: store mapping
             var name = tex.name.ToLower().Trim();
             _textureIndices[name] = i;
-
             Debug.Log($"Mapped {name} → {i}");
         }
     }

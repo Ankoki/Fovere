@@ -29,7 +29,7 @@ public class World : MonoBehaviour
             current.Add("worldZLength", world.generator.worldZLength);
             foreach (var chunk in world._chunks.Values)
             {
-                var blocks = chunk.SerializeTypes();
+                var blocks = chunk.Serialize();
                 foreach (var block in blocks)
                     current.Add(block.Key, block.Value);
             }
