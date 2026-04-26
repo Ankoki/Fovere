@@ -1,20 +1,30 @@
-﻿public class PlayerInventory : Inventory
+﻿using System.Collections.Generic;
+
+public class PlayerInventory : Inventory
 {
 
     private readonly PlayerData _playerData;
 
-    public PlayerInventory(PlayerData playerData)
+    public PlayerInventory()
     {
-        _playerData = playerData;
     }
     
     public override int GetInventorySize()
     {
+        return 16; /*
         if (_playerData.HasExpansion(PlayerData.Expansion.InventoryRowFour))
             return 32;
         if (_playerData.HasExpansion(PlayerData.Expansion.InventoryRowThree))
             return 24;
-        return _playerData.HasExpansion(PlayerData.Expansion.InventoryRowTwo) ? 16 : 8;
+        return _playerData.HasExpansion(PlayerData.Expansion.InventoryRowTwo) ? 16 : 8; */
     }
 
+    public override Dictionary<string, object> Serialize()
+    {
+        // Adds the type of inventory on this child of Inventory.
+        var data = base.Serialize();
+        data.Add("inventory_type", "player");
+        return data;
+    }
+    
 }

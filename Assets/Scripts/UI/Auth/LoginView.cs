@@ -2,44 +2,38 @@
 using PlayFab;
 using PlayFab.ClientModels;
 using TMPro;
-using Unity.VectorGraphics;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using RegisterResult = PlayFab.ClientModels.RegisterPlayFabUserResult;
 
 public class LoginView : MonoBehaviour
 {
-
     public bool clearPlayerPrefs;
     public Toggle rememberMe;
-    
+
     public Button cancelRegisterButton;
     public Button clearSignInButton;
 
-    [Header("Root Auth")]
-    public GameObject authPanel;
+    [Header("Root Auth")] public GameObject authPanel;
     public Button directLoginButton;
     public Button directRegisterButton;
-    
-    [Header("Register Panel")]
-    public GameObject registerPanel;
+
+    [Header("Register Panel")] public GameObject registerPanel;
     public TMP_InputField registerEmail;
     public TMP_InputField registerUsername;
     public TMP_InputField registerPassword;
     public TMP_InputField registerPasswordConfirm;
     public Button registerButton;
     public TMP_Text registerStatusText;
-    
-    [Header("Login Panel")]
-    public GameObject loginPanel;
+
+    [Header("Login Panel")] public GameObject loginPanel;
     public TMP_InputField loginEmail;
     public TMP_InputField loginPassword;
     public Button loginButton;
     public TMP_Text loginStatusText;
 
     public GetPlayerCombinedInfoRequestParams requestParams;
-    
+
     private readonly PlayFabAuth _auth = PlayFabAuth.Instance;
 
     public void Awake()
@@ -49,6 +43,7 @@ public class LoginView : MonoBehaviour
             _auth.ClearRememberMe();
             _auth.AuthType = AuthTypes.None;
         }
+
         rememberMe.isOn = _auth.RememberMe;
         rememberMe.onValueChanged.AddListener(toggle => _auth.RememberMe = toggle);
     }
@@ -63,15 +58,15 @@ public class LoginView : MonoBehaviour
         PlayFabAuth.OnRegisterSuccess += OnRegisterSuccess;
         PlayFabAuth.OnLoginSuccess += OnLoginSuccess;
         PlayFabAuth.OnAuthError += OnAuthError;
-        
+
         directLoginButton.onClick.AddListener(DisplayLogin);
         directRegisterButton.onClick.AddListener(DisplayRegister);
-        
+
         loginButton.onClick.AddListener(OnLoginClicked);
         registerButton.onClick.AddListener(OnRegisterClicked);
         cancelRegisterButton.onClick.AddListener(OnCancelRegisterClicked);
         clearSignInButton.onClick.AddListener(OnClearSignInClicked);
-        
+
         _auth.requestParams = requestParams;
     }
 
@@ -115,10 +110,9 @@ public class LoginView : MonoBehaviour
         if (FovereSettings.DebugMode)
             Debug.Log("Successfully Logged In as: " + username);
         // TODO show loading screen.
-        var playerData = new PlayerData(entityId); // Load player data before the scene, world generation will be effected.
-        SceneManager.LoadScene("Scenes/GameScene", LoadSceneMode.Single); // Might be additive in the future to further simplify layers.
-        
-        
+        DatabaseAccessor.Monitor();
+        StartCoroutine(DatabaseAccessor.FetchUserData(entityId, loginStatusText));
+        StartCoroutine(DatabaseAccessor.FetchWorlds(entityId, loginStatusText));
     }
 
     private void OnAuthError(PlayFabError error)
@@ -174,7 +168,7 @@ public class LoginView : MonoBehaviour
         registerUsername.text = string.Empty;
         registerPassword.text = string.Empty;
         registerPasswordConfirm.text = string.Empty;
-        
+
         registerPanel.SetActive(false);
         authPanel.SetActive(true);
     }
@@ -184,5 +178,4 @@ public class LoginView : MonoBehaviour
         _auth.ClearRememberMe();
         loginStatusText.text = "Sign-in information cleared.";
     }
-    
 }

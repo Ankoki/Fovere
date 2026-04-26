@@ -3,6 +3,12 @@ using UnityEngine;
 
 public class Chunk : MonoBehaviour
 {
+
+    public static Chunk Deserialize(Dictionary<string, string> data)
+    {
+        return null; // TODO
+    }
+    
     public const int ChunkSize = 16;
     public const int ChunkHeight = 32;
     public const int TileSize = 256;
@@ -33,7 +39,7 @@ public class Chunk : MonoBehaviour
         );
     }
     
-    public Dictionary<string, object> SerializeTypes()
+    public Dictionary<string, object> Serialize()
     {
         var dictionary = new Dictionary<string, object>();
         foreach (var block in ChunkBlocks)
@@ -42,7 +48,6 @@ public class Chunk : MonoBehaviour
                 continue;
             dictionary.Add(FromVector(ToWorld(block.Position)), block.Type.key);
         }
-
         return dictionary;
     }
 
