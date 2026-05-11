@@ -1,8 +1,8 @@
-﻿using Misc.Settings;
-using PlayFab;
+﻿using PlayFab;
 using PlayFab.ClientModels;
 using TMPro;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using RegisterResult = PlayFab.ClientModels.RegisterPlayFabUserResult;
 
@@ -43,7 +43,6 @@ public class LoginView : MonoBehaviour
             _auth.ClearRememberMe();
             _auth.AuthType = AuthTypes.None;
         }
-
         rememberMe.isOn = _auth.RememberMe;
         rememberMe.onValueChanged.AddListener(toggle => _auth.RememberMe = toggle);
     }
@@ -107,12 +106,16 @@ public class LoginView : MonoBehaviour
         // PlayerData loading logic.
         var entityId = result.EntityToken.Entity.Id;
         var username = result.InfoResultPayload.AccountInfo.Username ?? result.PlayFabId;
-        if (FovereSettings.DebugMode)
-            Debug.Log("Successfully Logged In as: " + username);
+        DDOLTransmitter.Instance.TransferTitleId(entityId);
+        DDOLTransmitter.Instance.TransferUsername(username);
+        Debug.Log("Successfully Logged In as: " + username);
         // TODO show loading screen.
         DatabaseAccessor.Monitor();
-        StartCoroutine(DatabaseAccessor.FetchUserData(entityId, loginStatusText));
-        StartCoroutine(DatabaseAccessor.FetchWorlds(entityId, loginStatusText));
+        // We cannot access our database at this time, so no data can be persistant. We provide
+        // The PlayFab authentication id's provided and use this to create the emulation of a login for now.
+        SceneManager.LoadScene("Scenes/GameScene", LoadSceneMode.Single);
+        // StartCoroutine(DatabaseAccessor.FetchUserData(entityId, loginStatusText));
+        // StartCoroutine(DatabaseAccessor.FetchWorlds(entityId, loginStatusText));
     }
 
     private void OnAuthError(PlayFabError error)
@@ -131,12 +134,8 @@ public class LoginView : MonoBehaviour
                 loginStatusText.text = error.GenerateErrorReport();
                 break;
         }
-
-        if (FovereSettings.DebugMode)
-        {
-            Debug.Log(error.Error);
-            Debug.LogError(error.GenerateErrorReport());
-        }
+        Debug.Log(error.Error);
+        Debug.LogError(error.GenerateErrorReport());
     }
 
     private void OnLoginClicked()

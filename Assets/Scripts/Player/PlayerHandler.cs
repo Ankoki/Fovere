@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using DG.Tweening;
+using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
@@ -7,6 +9,9 @@ using UnityEngine.UI;
 /// </summary>
 public class PlayerHandler : MonoBehaviour
 {
+
+    [Header("Render Settings")] public int renderDistance = 8;
+    
     [Header("Movement Settings")] 
     public float speed = 5F;
     public float sensitivity = 0.5f;
@@ -22,7 +27,7 @@ public class PlayerHandler : MonoBehaviour
 
     private Vector3 _velocity;
 
-    private CharacterController _characterController;
+    private CharacterController _controller;
     private Animator _animator;
     private Camera _mainCamera;
 
@@ -35,17 +40,118 @@ public class PlayerHandler : MonoBehaviour
     private bool _isSpawned;
     private Vector3 _teleportPosition = Vector3.zero;
 
+    private bool _freeze;
+
     private void Awake()
     {
-        // TODO check for transferred presence.
-        _playerData = PlayerData.Deserialize(DDOLTransmitter.Instance.RetrieveTransferredPlayer());
-        _playerInventory = new PlayerInventory();
-        _characterController = GetComponent<CharacterController>();
+        _controller = GetComponent<CharacterController>();
         _animator = GetComponent<Animator>();
         _mainCamera = GameObject.Find("Camera").GetComponent<Camera>();
         _moveAction = InputSystem.actions.FindAction("Move");
         _jumpAction = InputSystem.actions.FindAction("Jump");
         _lookAction = InputSystem.actions.FindAction("Look");
+    }
+    
+    private void Start()
+    {
+        Cursor.lockState = CursorLockMode.Locked;
+    }
+
+    private readonly List<Chunk> _renderedChunks = new();
+
+    private void Update()
+    {
+        Debug.Log($"Spawned[{_isSpawned}],ChunkPos[{string.Join(",", _renderedChunks)}]");
+        if (!IsSpawned())
+            return;
+        // Rendering
+        var old = _renderedChunks;
+        var chunk = GetChunk();
+        if (!chunk.IsLoaded())
+            chunk.Load();
+        var originPos = chunk.chunkCoord;
+        var originX = originPos.x;
+        var originZ = originPos.y;
+        var chunkPosition = chunk.chunkCoord;
+        var xMax = chunkPosition.x + renderDistance;
+        var zMax = chunkPosition.y + renderDistance;
+        _renderedChunks.Clear();
+        for (var x = xMax; x > (originX - renderDistance); x--)
+        {
+            for (var z = zMax; z > (originZ - renderDistance); z--)
+            {
+                var found = _currentWorld.GetChunk(x, z);
+                found.Load();
+                _renderedChunks.Add(found);
+            }
+        }
+        foreach (var c in old)
+        {
+            if (!_renderedChunks.Contains(c))
+                c.Unload();
+        }
+        // Gravity
+        if (_controller.isGrounded && _velocity.y < 0)
+            _velocity.y = -2f;
+        _velocity.y += gravity * Time.deltaTime;
+        _controller.Move(_velocity * Time.deltaTime);
+        // Camera Rotation for Mouse Look
+        var inputL = _lookAction.ReadValue<Vector2>();
+        var mouseX = inputL.x * sensitivity;
+        var mouseY = inputL.y * sensitivity; // TODO y axis wont budge, check constraints.
+        var currentRotation = transform.localEulerAngles;
+        currentRotation.y += mouseX;
+        transform.localRotation = Quaternion.AngleAxis(currentRotation.y, Vector3.up);
+        var currentCameraRotation = _mainCamera.gameObject.transform.eulerAngles;
+        currentCameraRotation.x -= mouseY;
+        _mainCamera.gameObject.transform.localRotation = Quaternion.AngleAxis(currentCameraRotation.x, Vector3.right);
+        // Process gravity before freezing mechanics so players aren't stuck midair.
+        if (_freeze)
+            return;
+        // Movement
+        var input = _moveAction.ReadValue<Vector2>();
+        var move = new Vector3(input.x, 0, input.y);
+        move = _mainCamera.transform.TransformDirection(move);
+        _controller.Move(move * speed * Time.deltaTime);
+        // Jumping
+        if (_jumpAction.triggered && _controller.isGrounded)
+            _velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
+        // Animation
+        // anim.SetFloat("run", direction.magnitude); // TODO setup player animations.
+    }
+
+    private void LateUpdate()
+    {
+        // Safe Teleporting for CharacterController
+        if (_teleportPosition == Vector3.zero)
+            return;
+        _controller.enabled = false;
+        transform.position = _teleportPosition;
+        _teleportPosition = Vector3.zero;
+        _controller.enabled = true;
+    }
+
+    /// <summary>
+    /// Checks if the player has been spawned.
+    /// </summary>
+    /// <returns>True if spawned, else false.</returns>
+    public bool IsSpawned()
+    {
+        return _isSpawned;
+    }
+
+    /// <summary>
+    /// Sets the player data of this player. Will only be set once and should be done by the game manager.
+    /// </summary>
+    /// <param name="playerData">The player data of this player.</param>
+    public void SetPlayerData(PlayerData playerData)
+    {
+        _playerData ??= playerData;
+    }
+
+    public void SpawnPlayer()
+    {
+        _isSpawned = true;
     }
 
     /// <summary>
@@ -59,15 +165,48 @@ public class PlayerHandler : MonoBehaviour
         Teleport(world, x, world.GetHighestAt(Mathf.FloorToInt(x), Mathf.FloorToInt(z)).Position.y + 2, z);
     }
 
+    /// <summary>
+    /// Teleports the player to a new location.
+    /// </summary>
+    /// <param name="x">The x-coord.</param>
+    /// <param name="y">The y-coord.</param>
+    /// <param name="z">The z-coord.</param>
     public void Teleport(float x, float y, float z)
     {
         Teleport(_currentWorld, x, y, z);
     }
 
+    /// <summary>
+    /// Teleports the player to a new location.
+    /// </summary>
+    /// <param name="vector">The vector.</param>
+    public void Teleport(Vector3 vector)
+    {
+        Teleport(_currentWorld, vector);
+    }
+
+    /// <summary>
+    /// Teleports the player to a new location.
+    /// </summary>
+    /// <param name="world">The world.</param>
+    /// <param name="x">The x-coord.</param>
+    /// <param name="y">The y-coord.</param>
+    /// <param name="z">The z-coord.</param>
     public void Teleport(World world, float x, float y, float z)
     {
         _currentWorld = world;
         _teleportPosition = new Vector3(x, y, z);
+    }
+
+    /// <summary>
+    /// Teleports the player to a new location.
+    /// </summary>
+    /// <param name="world">The world.</param>
+    /// <param name="vector">The vector position.</param>
+    public void Teleport(World world, Vector3 vector)
+    {
+        _currentWorld = world;
+        _teleportPosition = vector;
     }
 
     /// <summary>
@@ -83,7 +222,7 @@ public class PlayerHandler : MonoBehaviour
             if (item == null)
                 continue;
             var slot = grid.GetComponentAtIndex<Image>(i);
-            slot.sprite = item.GetItemType().icon;
+            slot.sprite = item.GetItemType().Icon;
         }
         inventoryMenu.SetActive(true);
         _inventoryOpen = true;
@@ -107,50 +246,57 @@ public class PlayerHandler : MonoBehaviour
         return _inventoryOpen;
     }
 
-    private void Start()
+    /// <summary>
+    /// Freezes the players movement.
+    /// </summary>
+    public void Freeze()
     {
-        Cursor.lockState = CursorLockMode.Locked;
+        _freeze = true;
     }
 
-    private void Update()
+    /// <summary>
+    /// Unfreezes the players' movement.
+    /// </summary>
+    public void Unfreeze()
     {
-        // Movement
-        var input = _moveAction.ReadValue<Vector2>();
-        var move = new Vector3(input.x, 0, input.y);
-        move = _mainCamera.transform.TransformDirection(move);
-        _characterController.Move(move * speed * Time.deltaTime);
-        // Gravity
-        if (_characterController.isGrounded && _velocity.y < 0)
-            _velocity.y = -2f;
-        _velocity.y += gravity * Time.deltaTime;
-        _characterController.Move(_velocity * Time.deltaTime);
-        // Jumping
-        if (_jumpAction.triggered && _characterController.isGrounded)
-            _velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
-        // Animation
-        // anim.SetFloat("run", direction.magnitude); // TODO setup player animations.
-        
-        // Camera Rotation for Mouse Look
-        var inputL = _lookAction.ReadValue<Vector2>();
-        var mouseX = inputL.x * sensitivity;
-        var mouseY = inputL.y * sensitivity; // TODO y axis wont budge, check constraints.
-        var currentRotation = transform.localEulerAngles;
-        currentRotation.y += mouseX;
-        transform.localRotation = Quaternion.AngleAxis(currentRotation.y, Vector3.up);
-        var currentCameraRotation = _mainCamera.gameObject.transform.eulerAngles;
-        currentCameraRotation.x -= mouseY;
-        _mainCamera.gameObject.transform.localRotation = Quaternion.AngleAxis(currentCameraRotation.x, Vector3.right);
+        _freeze = false;
     }
 
-    private void LateUpdate()
+    /// <summary>
+    /// Checks if the player is frozen.
+    /// </summary>
+    /// <returns>True if frozen, else false.</returns>
+    public bool IsFrozen()
     {
-        // Safe Teleporting for CharacterController
-        if (_teleportPosition == Vector3.zero)
-            return;
-        _characterController.enabled = false;
-        transform.position = _teleportPosition;
-        _teleportPosition = Vector3.zero;
-        _characterController.enabled = true;
+        return _freeze;
+    }
+    
+    /// <summary>
+    /// Makes the resident turn to look at a location.
+    /// </summary>
+    /// <param name="pos">The location to look at.</param>
+    public void TurnTo(Vector3 pos)
+    {
+        transform.DOLookAt(pos, Vector3.Distance(transform.position, pos) / 5);
+        var turn = "turn_" + (IsRightSide(pos) ? "right" : "left");
+        _animator.SetTrigger(turn);
+    }
+
+    public Chunk GetChunk()
+    {
+        return _currentWorld.GetChunkAt((int) transform.position.x, (int) transform.position.z);
+    }
+
+    /// <summary>
+    /// Checks if the direction between the forward and target is left or right.
+    /// </summary>
+    /// <param name="target">The target location.</param>
+    /// <returns>True if on the right, else false.</returns>
+    private bool IsRightSide(Vector3 target)
+    {
+        var right = Vector3.Cross(Vector3.up.normalized, transform.forward.normalized);
+        var dir = Vector3.Dot(right, target.normalized);
+        return dir > 0f;
     }
     
 }

@@ -1,55 +1,84 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
-using PlayFab.Json;
-using Unity.Cinemachine;
 using UnityEngine;
 
 /// <summary>
 /// Class to store all block and procedural generation data for given worlds.
 /// Multiple worlds can be used and isolated, with different locations for each.
 /// </summary>
-// TODO fix texturing. all greedy meshing on the horizontal plane is correct, details found in page 28 of PB.
 [PublicAPI]
 public class World : MonoBehaviour
 {
     private static readonly Dictionary<string, World> Worlds = new();
 
-    public static string SerializeWorlds()
+    public static World Deserialize(Dictionary<string, object> data, Vector3 lastPosition) // Getting the player's last position allows us to only render chunks around the player.
     {
-        // Using PlayFab JSON objects.
-        var root = new JsonObject();
-        var worlds = new JsonObject();
-        foreach (var world in Worlds.Values)
+        var environmentObject = GameObject.Find("Environment");
+        var gameObject = new GameObject("Village");
+        gameObject.transform.SetParent(environmentObject.transform); // For better formatting within the scene.
+        var world = gameObject.AddComponent<World>();
+        if (data.ContainsKey("createWorld"))
         {
-            var current = new JsonObject();
-            current.Add("worldXLength", world.generator.worldXLength);
-            current.Add("worldYLength", world.generator.worldYLength);
-            current.Add("worldZLength", world.generator.worldZLength);
-            foreach (var chunk in world._chunks.Values)
-            {
-                var blocks = chunk.Serialize();
-                foreach (var block in blocks)
-                    current.Add(block.Key, block.Value);
-            }
-            worlds.Add(world.label, current);
+            world.label = "Village";
+            world._start = System.DateTimeOffset.Now.ToUnixTimeMilliseconds();
+            Debug.Log($"createWorld found. Generating starter village@{world._start}ms.");
+            var generator = gameObject.AddComponent<VillageGenerator>();
+            world.generator = generator;
+            world.SetupChunks();
+            Debug.Log($"Generator[{generator}]");
+            generator.Generate(world);
+            var end = System.DateTimeOffset.Now.ToUnixTimeMilliseconds();
+            Debug.Log($"World generation finished at {end}, took {end - world._start}ms.");
         }
-        root.Add("worlds", worlds);
-        return root.ToString();
+        else
+        {
+            world.label = data["label"] as string;
+            world._seed = (int) data["seed"];
+            var rawWorldPos = data["worldPosition"] as string;
+            var split = rawWorldPos.Split(","); // We can ignore these warnings as these values are validated earlier.
+            world.worldPos = new Vector3Int(int.Parse(split[0]), int.Parse(split[1]), int.Parse(split[2]));
+            world.generator = Generator.GetGenerator(data["generator"] as string);
+            world.generator.worldXLength = int.Parse(data["worldXLength"] as string);
+            world.generator.worldZLength = int.Parse(data["worldZLength"] as string);
+            world.SetupChunks();
+            var chunks = data["chunks"] as Dictionary<string, object>;
+            foreach (var pair in chunks)
+            {
+                var position = DataHelpers.ToVector3Int(pair.Key);
+                var item = ItemType.Get(pair.Value as string);
+                world.SetBlock(item, position.x, position.y, position.z);
+            }
+            // TODO models, buildings and residents.
+        }
+        Worlds.Add(world.label, world);
+        world._generation = true;
+        return world;
     }
 
     /// <summary>
-    /// Gets a world by name.
+    /// Gets a world by label.
     /// This world must be loaded for a value to be returned.
     /// </summary>
-    /// <param name="name">The name of the world to be retrieved.</param>
-    /// <returns></returns>
-    public static World GetWorld(string name)
+    /// <param name="label">The label of the world to be retrieved.</param>
+    /// <returns>The world by the given name, or null if not present.</returns>
+    public static World GetWorld(string label)
     {
-        return Worlds[name];
+        return Worlds.GetValueOrDefault(label, null);
     }
-    
+
+    /// <summary>
+    /// Gets all the loaded worlds to be serialised.
+    /// </summary>
+    /// <returns>Gets the loaded worlds.</returns>
+    public static World[] GetWorlds()
+    {
+        return Worlds.Values.ToArray();
+    }
+
     private const int ChunkRebuildsPerFrame = 2;
 
     /// <summary>
@@ -61,36 +90,38 @@ public class World : MonoBehaviour
     {
         var mesh = chunk.MeshFilter.mesh ?? new Mesh();
         mesh.Clear();
-
-        mesh.SetVertices(data.vertices);
-        mesh.SetTriangles(data.triangles, 0);
-        mesh.SetUVs(0, data.uvs);
-        mesh.SetUVs(1, data.textureIndices);
-
+        mesh.SetVertices(data.Vertices);
+        mesh.SetTriangles(data.Triangles, 0);
+        mesh.SetUVs(0, data.UVs);
+        mesh.SetUVs(1, data.TextureIndices);
         mesh.RecalculateNormals();
         mesh.RecalculateBounds();
-
         chunk.MeshFilter.mesh = mesh;
         chunk.MeshCollider.sharedMesh = mesh;
     }
-    
-    private static void AddQuad(List<Vector3> vertices, List<int> triangles, List<Vector2> uvs, List<Vector3> textureIndices,
+
+    /// <summary>
+    /// Populates all vertices, triangles, uvs and texture indices lists given.
+    /// TODO incorrect uv placement on ZY, YZ and YX planes. To be fixed.
+    /// </summary>
+    private static void AddQuad(List<Vector3> vertices, List<int> triangles, List<Vector2> uvs,
+        List<Vector3> textureIndices,
         ref int vertexIndex, int[] startPos, int[] du, int[] dv, int width, int height, int axis, int textureIndex,
         int direction)
     {
         var normal = new int[3];
-        if (direction == 1) 
+        if (direction == 1)
             normal[axis] = 1;
         Vector3 v0 = new(startPos[0] + normal[0], startPos[1] + normal[1], startPos[2] + normal[2]);
         Vector3 v1 = new(startPos[0] + du[0] * width + normal[0],
-                        startPos[1] + du[1] * width + normal[1],
-                        startPos[2] + du[2] * width + normal[2]);
+            startPos[1] + du[1] * width + normal[1],
+            startPos[2] + du[2] * width + normal[2]);
         Vector3 v2 = new(startPos[0] + du[0] * width + dv[0] * height + normal[0],
-                        startPos[1] + du[1] * width + dv[1] * height + normal[1],
-                        startPos[2] + du[2] * width + dv[2] * height + normal[2]);
-        Vector3 v3 = new(startPos[0] + dv[0] * height + normal[0], 
-                        startPos[1] + dv[1] * height + normal[1],
-                        startPos[2] + dv[2] * height + normal[2]);
+            startPos[1] + du[1] * width + dv[1] * height + normal[1],
+            startPos[2] + du[2] * width + dv[2] * height + normal[2]);
+        Vector3 v3 = new(startPos[0] + dv[0] * height + normal[0],
+            startPos[1] + dv[1] * height + normal[1],
+            startPos[2] + dv[2] * height + normal[2]);
         var start = vertexIndex;
         vertices.Add(v0);
         if (direction == 1)
@@ -105,6 +136,7 @@ public class World : MonoBehaviour
             vertices.Add(v2);
             vertices.Add(v1);
         }
+
         triangles.Add(start + 0);
         triangles.Add(start + 1);
         triangles.Add(start + 2);
@@ -123,10 +155,10 @@ public class World : MonoBehaviour
     }
 
     /// <summary>
-    /// 
+    /// Modulus operation that will not return a value lower than 0. 
     /// </summary>
-    /// <param name="value"></param>
-    /// <param name="size"></param>
+    /// <param name="value">The value.</param>
+    /// <param name="size">The size of the divider.</param>
     /// <returns></returns>
     private static int Mod(int value, int size)
     {
@@ -134,46 +166,98 @@ public class World : MonoBehaviour
         return r < 0 ? r + size : r;
     }
 
+    public delegate void WorldLoadEventHandler();
+    public event WorldLoadEventHandler OnWorldLoadEvent;
+
     public string label;
     public Generator generator;
     public Vector3Int worldPos;
     public bool isMainWorld;
-    public GameObject playerPrefab; // Should be present if isMainWorld is true. TODO is this a good way of doing it lol
     private GameObject _chunkPrefab;
     private readonly Dictionary<Vector2Int, Chunk> _chunks = new();
     private readonly HashSet<Chunk> _dirtyChunks = new();
+    private int _seed = -1;
+    private bool _loaded;
+    private long _start;
+    private bool _generation;
 
     private void Awake()
     {
         if (TextureArrayBuilder.Instance == null)
             new GameObject("TextureArrayBuilder").AddComponent<TextureArrayBuilder>();
+        _chunkPrefab = Resources.Load<GameObject>("Prefabs/World/Chunk/Chunk");
     }
 
-    // TODO the way this is handled will need to be changed. map data will be retrieved from database per person.
     private void Start()
     {
-        _chunkPrefab = Resources.Load<GameObject>("Prefabs/World/Chunk/Chunk");
+        // Testing World Generation without all deserialization.
+        GenerateWorld();
+    }
+
+    private int renderDistance = 8;
+    private List<Chunk> _renderedChunks = new();
+    
+    private void GenerateWorld()
+    {
+        ItemType.Initialize(); // Initialize all of our ItemType values.
+        SetupChunks();
         generator.Generate(this);
-        Worlds.Add(label, this);
-        Debug.Log($"World {label} generated.");
-        if (!isMainWorld)
-            return;
-        if (playerPrefab == null)
+        var pos = new Vector3Int(100, 30, 100);
+        var old = _renderedChunks;
+        var chunk = GetChunkAt(pos.x, pos.z);
+        if (!chunk.IsLoaded())
+            chunk.Load();
+        var originPos = chunk.chunkCoord;
+        var originX = originPos.x;
+        var originZ = originPos.y;
+        var chunkPosition = chunk.chunkCoord;
+        var xMax = chunkPosition.x + renderDistance;
+        var zMax = chunkPosition.y + renderDistance;
+        _renderedChunks.Clear();
+        var updated = new List<Chunk>();
+        for (var x = xMax; x > (originX - renderDistance); x--)
         {
-            Debug.Log("playerPrefab is null, no player will be spawned.");
-            return;
+            for (var z = zMax; z > (originZ - renderDistance); z--)
+            {
+                var found = GetChunk(x, z);
+                found.Load();
+                _renderedChunks.Add(found);
+                updated.Add(found);
+            }
         }
-        var spawned = Instantiate(playerPrefab, transform);
-        var cameraController = spawned.GetComponent<CameraController>();
-        cameraController.standardCamera = GameObject.Find("CMStandard").GetComponent<CinemachineCamera>();
-        cameraController.zoomCamera = GameObject.Find("CMZoom").GetComponent<CinemachineCamera>();
-        cameraController.obstructedViewCamera = GameObject.Find("CMObstructed").GetComponent<CinemachineCamera>();
-        var cameraTarget = GameObject.Find("CameraTarget");
-        cameraController.standardCamera.Follow = cameraTarget.transform;
-        cameraController.zoomCamera.Follow = cameraTarget.transform;
-        cameraController.obstructedViewCamera.Follow = cameraTarget.transform;
-        spawned.GetComponent<PlayerHandler>().SafeTeleport(this, generator.worldXLength / 2f, generator.worldZLength / 2f);
-        Debug.Log($"World Serialize test={SerializeWorlds()}");
+        foreach (var c in old)
+        {
+            foreach (var n in updated)
+            {
+                if (c.chunkCoord.x == n.chunkCoord.x && c.chunkCoord.y == n.chunkCoord.y)
+                {
+                    c.Unload();
+                    _renderedChunks.Remove(c);
+                }
+            }
+        }
+        Debug.Log($"Rendered Chunks[100,150,100] at positions[{string.Join(",", _renderedChunks)}]");
+    }
+
+    /// <summary>
+    /// Sets the seed of this world if unset.
+    /// Will not override a set value, should only be set during generation. 
+    /// </summary>
+    /// <param name="seed">The seed of this world.</param>
+    public void SetSeed(int seed)
+    {
+        if (_seed != -1)
+            return;
+        _seed = seed;
+    }
+
+    /// <summary>
+    /// Gets the seed of this world.
+    /// </summary>
+    /// <returns>The seed of this world.</returns>
+    public int GetSeed()
+    {
+        return _seed;
     }
 
     /// <summary>
@@ -207,6 +291,34 @@ public class World : MonoBehaviour
         if (localZ == Chunk.ChunkSize - 1) MarkChunkDirty(GetChunkAt(x, z + 1));
         return block;
     }
+    
+    /// <summary>
+    /// Sets a block to be placed but not mark the chunk as dirty.
+    /// This is used for primarily for terrain generation, to not load chunks that aren't being rendered.
+    /// </summary>
+    /// <param name="type">The type to set this block to.</param>
+    /// <param name="pos">The position.</param>
+    public void SetUnprocessedBlock(ItemType type, Vector3 pos)
+    {
+        SetUnprocessedBlock(type, (int) pos.x, (int) pos.y, (int) pos.z);
+    }
+
+    /// <summary>
+    /// Sets a block to be placed but not mark the chunk as dirty.
+    /// This is used for primarily for terrain generation, to not load chunks that aren't being rendered.
+    /// </summary>
+    /// <param name="type">The type to set this block to.</param>
+    /// <param name="x">The x-coordinate.</param>
+    /// <param name="y">The y-coordinate.</param>
+    /// <param name="z">The z-coordinate.</param>
+    public void SetUnprocessedBlock(ItemType type, int x, int y, int z)
+    {
+        var chunk = GetChunkAt(x, z);
+        var localX = Mod(x, Chunk.ChunkSize);
+        var localZ = Mod(z, Chunk.ChunkSize);
+        var block = new Block(new Vector3Int(x, y, z), this, type);
+        chunk.ChunkBlocks[localX, y, localZ] = block;
+    }
 
     /// <summary>
     /// Gets the highest block at the given x and z coordinates.
@@ -224,10 +336,10 @@ public class World : MonoBehaviour
         var localZ = z % Chunk.ChunkSize;
         if (localX < 0) localX += Chunk.ChunkSize;
         if (localZ < 0) localZ += Chunk.ChunkSize;
-        for (var y = 0; y < generator.worldYLength; y++)
+        for (var y = 0; y < Chunk.ChunkHeight; y++)
         {
             var block = chunk.ChunkBlocks[localX, y, localZ];
-            if (block != null && block.Type != ItemType.Air && block.Position.y > highest.Position.y)
+            if (block != null && !block.Type.Equals(ItemType.Get(ItemType.Keys.Air)) && block.Position.y > highest.Position.y)
                 highest = block;
         }
 
@@ -266,11 +378,11 @@ public class World : MonoBehaviour
     public bool IsAir(int x, int y, int z)
     {
         var b = GetBlock(x, y, z);
-        return b == null || b.Type == ItemType.Air;
+        return b == null || b.Type.Equals(ItemType.Get(ItemType.Keys.Air));
     }
 
     /// <summary>
-    /// Gets the chunk at a specific set of coordinates.
+    /// Gets the chunk at a set of world coordinates.
     /// </summary>
     /// <param name="x">The x-coord.</param>
     /// <param name="z">The z-coord.</param>
@@ -282,13 +394,38 @@ public class World : MonoBehaviour
         var coord = new Vector2Int(chunkX, chunkZ);
         if (!_chunks.TryGetValue(coord, out var chunk))
         {
-            var chunkObj = Instantiate(_chunkPrefab, transform);
-            chunk = chunkObj.GetComponent<Chunk>();
-            chunk.Init(coord);
+            UnityMainThreadDispatcher.Instance().Enqueue(SetupChunk(coord, chunk));
+        }
+        return chunk;
+    }
 
+    private IEnumerator SetupChunk(Vector2 coord, Chunk chunk)
+    {
+        var chunkObj = Instantiate(_chunkPrefab, transform);
+        chunkObj.transform.SetParent(transform);
+        chunk = chunkObj.GetComponent<Chunk>();
+        chunk.Init(coord, this);
+        _chunks.Add(coord, chunk);
+    }
+
+    /// <summary>
+    /// Gets a chunk based on a set of CHUNK CO-ORDINATES.
+    /// Use GetChunkAt(int x, int z) for world coordinates.
+    /// </summary>
+    /// <param name="x">The x-coord.</param>
+    /// <param name="z">The z-coord.</param>
+    /// <returns>The chunk at the coordinate.</returns>
+    public Chunk GetChunk(int x, int z)
+    {
+        var coord = new Vector2Int(x, z);
+        if (!_chunks.TryGetValue(coord, out var chunk))
+        {
+            var chunkObj = Instantiate(_chunkPrefab, transform);
+            chunkObj.transform.SetParent(transform);
+            chunk = chunkObj.GetComponent<Chunk>();
+            chunk.Init(coord, this);
             _chunks.Add(coord, chunk);
         }
-
         return chunk;
     }
 
@@ -325,23 +462,12 @@ public class World : MonoBehaviour
     private ItemType GetItemTypeFrom(Chunk chunk, ItemType[,,] types, int x, int y, int z)
     {
         if (y < 0 || y >= Chunk.ChunkHeight)
-            return ItemType.Air;
-        if (x < 0 || x >= Chunk.ChunkSize || z < 0 || z >= Chunk.ChunkSize)
-        {
-            var worldX = chunk.ChunkCoord.x * Chunk.ChunkSize + x;
-            var worldZ = chunk.ChunkCoord.y * Chunk.ChunkSize + z;
-            return GetBlock(worldX, y, worldZ)?.Type ?? ItemType.Air;
-        }
-        return types[x, y, z];
-    }
-
-    private ItemType GetItem(ItemType[,,] types, Chunk chunk, int x, int y, int z)
-    {
-        if (y < 0 || y >= Chunk.ChunkHeight)
-            return ItemType.Air;
-        var worldX = chunk.ChunkCoord.x * Chunk.ChunkSize + x;
-        var worldZ = chunk.ChunkCoord.y * Chunk.ChunkSize + z;
-        return GetBlock(worldX, y, worldZ)?.Type ?? ItemType.Air;
+            return ItemType.Get(ItemType.Keys.Air);
+        if (x > 0 && x < Chunk.ChunkSize && z >= 0 && z < Chunk.ChunkSize)
+            return types[x, y, z];
+        var worldX = chunk.chunkCoord.x * Chunk.ChunkSize + x;
+        var worldZ = chunk.chunkCoord.y * Chunk.ChunkSize + z;
+        return GetBlock(worldX, y, worldZ)?.Type ?? ItemType.Get(ItemType.Keys.Air);
     }
 
     // Cleanup test.
@@ -361,7 +487,7 @@ public class World : MonoBehaviour
         for (var z = 0; z < Chunk.ChunkSize; z++)
             types[x, y, z] =
                 chunk.ChunkBlocks[x, y, z]?.Type ??
-                ItemType.Air; // If no block is found, default to air.
+                ItemType.Get(ItemType.Keys.Air); // If no block is found, default to air.
         var chunkParams = new[] { Chunk.ChunkSize, Chunk.ChunkHeight, Chunk.ChunkSize };
         var pos = new int[3]; // The walker position.
         var faceOffset = new int[3]; // The direction we are checking.
@@ -385,9 +511,9 @@ public class World : MonoBehaviour
                         var blockA = GetItemTypeFrom(chunk, types, pos[0], pos[1], pos[2]);
                         var blockB = GetItemTypeFrom(chunk, types, pos[0] + faceOffset[0], pos[1] + faceOffset[1],
                             pos[2] + faceOffset[2]);
-                        var isASolid = blockA != ItemType.Air &&
-                                       blockA.isBlock; // If either block is not solid, display a face here.
-                        if (isASolid != (blockB != ItemType.Air && blockB.isBlock))
+                        var isASolid = !blockA.Equals(ItemType.Get(ItemType.Keys.Air)) &&
+                                       blockA.IsBlock; // If either block is not solid, display a face here.
+                        if (isASolid != (!blockB.Equals(ItemType.Get(ItemType.Keys.Air)) && blockB.IsBlock))
                         {
                             var direction = isASolid ? 1 : -1;
                             var texture = (isASolid ? blockA : blockB).GetTextureIndex(axis, direction);
@@ -431,8 +557,9 @@ public class World : MonoBehaviour
 
                             if (stop) break;
                             height++;
-                        } // Assemble into one big quad.
+                        }
 
+                        // Assemble into one quad.
                         pos[axisU] = u;
                         pos[axisV] = v;
                         var dirU = new int[3];
@@ -459,10 +586,36 @@ public class World : MonoBehaviour
             }
         }
 
-        return new MeshData { vertices = vertices, triangles = triangles, uvs = uvs, textureIndices = textureIndices };
+        return new MeshData { Vertices = vertices, Triangles = triangles, UVs = uvs, TextureIndices = textureIndices };
     }
 
-    /// <summary> /// Adds all vertices and triangles for the given block. /// </summary> private void AddQuad( List<Vector3> vertices, List<int> triangles, List<Vector2> uvs, List<Vector3> textureIndices, ref int vertexIndex, int[] startPos, int[] du, int[] dv, int width, int height, int axis, int textureIndex, int direction) { var normal = new int[3]; if (direction == 1) normal[axis] = 1; Vector3 v0 = new( startPos[0] + normal[0], startPos[1] + normal[1], startPos[2] + normal[2]); Vector3 v1 = new( startPos[0] + du[0] * width + normal[0], startPos[1] + du[1] * width + normal[1], startPos[2] + du[2] * width + normal[2]); Vector3 v2 = new( startPos[0] + du[0] * width + dv[0] * height + normal[0], startPos[1] + du[1] * width + dv[1] * height + normal[1], startPos[2] + du[2] * width + dv[2] * height + normal[2]); Vector3 v3 = new( startPos[0] + dv[0] * height + normal[0], startPos[1] + dv[1] * height + normal[1], startPos[2] + dv[2] * height + normal[2]); var start = vertexIndex; vertices.Add(v0); if (direction == 1) { vertices.Add(v1); vertices.Add(v2); vertices.Add(v3); } else { vertices.Add(v3); vertices.Add(v2); vertices.Add(v1); } triangles.Add(start + 0); triangles.Add(start + 1); triangles.Add(start + 2); triangles.Add(start + 0); triangles.Add(start + 2); triangles.Add(start + 3); uvs.Add(new Vector2(0, 0)); uvs.Add(new Vector2(width, 0)); uvs.Add(new Vector2(width, height)); uvs.Add(new Vector2(0, height)); textureIndices.Add(new Vector3(0, 0, textureIndex)); textureIndices.Add(new Vector3(1, 0, textureIndex)); textureIndices.Add(new Vector3(1, 1, textureIndex)); textureIndices.Add(new Vector3(0, 1, textureIndex)); vertexIndex += 4; }
+    /// <summary>
+    /// Checks if this world has been loaded.
+    /// </summary>
+    /// <returns>True if loaded, else false.</returns>
+    public bool IsLoaded()
+    {
+        return _loaded;
+    }
+
+    /// <summary>
+    /// Sets the world's loaded status to true.
+    /// </summary>
+    public void SetLoaded()
+    {
+        _loaded = true;
+    }
+
+    /// <summary>
+    /// Marks this world as loaded.
+    /// Calls the on world load event.
+    /// </summary>
+    protected void MarkLoaded()
+    {
+        _loaded = true;
+        OnWorldLoadEvent();
+    }
+
     /// <summary>
     /// Rebuilds the given chunk asynchronously.
     /// </summary>
@@ -484,6 +637,47 @@ public class World : MonoBehaviour
             if (count >= ChunkRebuildsPerFrame)
                 break;
         }
+    }
+
+    /// <summary>
+    /// Sets up the chunks for this world.
+    /// Should only be called internally to lighten the load of terrain generation.
+    /// </summary>
+    private void SetupChunks()
+    {
+        for (var x = 0; x <= generator.worldXLength; x += Chunk.ChunkSize) // x
+        {
+            for (var z = 0; z <= generator.worldZLength; z += Chunk.ChunkSize) // z
+            {
+                var chunkX = Mathf.FloorToInt((float) x / Chunk.ChunkSize);
+                var chunkZ = Mathf.FloorToInt((float) z / Chunk.ChunkSize);
+                var coord = new Vector2Int(chunkX, chunkZ);
+                Debug.Log($"Generating chunk[{chunkX},{chunkZ}]");
+                var chunkObj = Instantiate(_chunkPrefab, transform);
+                chunkObj.transform.SetParent(transform);
+                var chunk = chunkObj.GetComponent<Chunk>();
+                chunk.Init(coord, this);
+                _chunks.Add(coord, chunk);
+            }
+        }
+    }
+
+    public Dictionary<string, object> Serialize()
+    {
+        var chunkData = new Dictionary<string, object>();
+        foreach (var pair in _chunks)
+            chunkData.Add($"{pair.Key.x},{pair.Key.y}", pair.Value.Serialize());
+        var data = new Dictionary<string, object>
+        {
+            { "label", label },
+            { "seed", _seed },
+            { "worldPosition", $"{worldPos.x},{worldPos.y},{worldPos.z}" },
+            { "generator", Generator.GetName(generator) },
+            { "worldXLength", generator.worldXLength },
+            { "worldZLength", generator.worldZLength },
+            { "chunks", chunkData } // TODO models and houses.
+        };
+        return data;
     }
     
 }

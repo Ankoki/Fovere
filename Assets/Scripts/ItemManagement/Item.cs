@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using JetBrains.Annotations;
 
 /// <summary>
@@ -6,14 +7,33 @@ using JetBrains.Annotations;
 [PublicAPI]
 public class Item
 {
+    private static readonly string[] ItemStructure =
+    {
+        "itemType",
+        "amount",
+        "displayName",
+        "description"
+    };
+
+    public static Item Deserialize(Dictionary<string, object> data)
+    {
+        if (!DataHelpers.ValidateKeys(data, ItemStructure))
+            return new Item(ItemType.Get(ItemType.Keys.UnknownBlock));
+        return new Item(ItemType.Get(data["itemType"] as string),
+            data["displayName"] as string,
+            data["description"] as string,
+            (int) data["amount"]);
+    }
 
     /// <summary>
     /// Creates a new Item.
     /// </summary>
     /// <param name="itemType">The base ItemType of this Item.</param>
     /// <param name="amount">The amount of the ItemType that are in this stack. Defaults to 1.</param>
-    public Item(ItemType itemType, int amount = 1):this(itemType, itemType.displayName, itemType.description, amount) {}
-    
+    public Item(ItemType itemType, int amount = 1) : this(itemType, itemType.DisplayName, itemType.Description, amount)
+    {
+    }
+
     /// <summary>
     /// Creates a new Item.
     /// </summary>
@@ -78,7 +98,7 @@ public class Item
     {
         _description = description;
     }
-    
+
     /// <summary>
     /// Gets the amount of the base ItemType in this stack.
     /// Will not be larger than Item#GetItemType()#maxStackSize.
@@ -88,7 +108,7 @@ public class Item
     {
         return _amount;
     }
-    
+
     /// <summary>
     /// Sets the amount of the base ItemType in this stack.
     /// </summary>
@@ -98,4 +118,16 @@ public class Item
         _amount = amount;
     }
 
+    public Dictionary<string, object> Serialize()
+    {
+        var data = new Dictionary<string, object>
+        {
+            { "itemType", _itemType.Key },
+            { "amount", _amount },
+            { "displayName", _displayName },
+            { "description", _description }
+        };
+        return data;
+    }
+    
 }

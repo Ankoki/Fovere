@@ -134,7 +134,7 @@ public class PlayFabAuth
                 {
                     TitleId = PlayFabSettings.TitleId,
                     CustomId = RememberMeId,
-                    CreateAccount = true,
+                    CreateAccount = false,
                     InfoRequestParameters = new GetPlayerCombinedInfoRequestParams
                     {
                         GetUserAccountInfo = true

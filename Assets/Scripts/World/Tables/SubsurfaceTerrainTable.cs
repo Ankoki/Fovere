@@ -4,11 +4,14 @@
 public class SubsurfaceTerrainTable : WeightedTable
 {
     
+    /// <summary>
+    /// Basic table to show the idea for prototype.
+    /// </summary>
     public SubsurfaceTerrainTable()
     {
-        Place(ItemType.Dirt, 100);
-        Place(ItemType.Stone, 100);
-        Place(ItemType.ExpraDeposit, 25);
+        Place(ItemType.Get(ItemType.Keys.Dirt), 100);
+        Place(ItemType.Get(ItemType.Keys.Stone), 100);
+        Place(ItemType.Get(ItemType.Keys.ExpraDeposit), 25);
     }
     
 }

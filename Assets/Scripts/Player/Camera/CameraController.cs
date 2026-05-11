@@ -1,7 +1,5 @@
-using System;
 using Unity.Cinemachine;
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 public class CameraController : MonoBehaviour
 {
@@ -33,6 +31,7 @@ public class CameraController : MonoBehaviour
     public float sensitivity = 0.5f;
     
     private CameraType _currentCamera;
+    
     private void Start()
     {
         ShowStandardCamera();
@@ -47,17 +46,6 @@ public class CameraController : MonoBehaviour
         zoomCamera.Priority.Value = 0;
         obstructedViewCamera.Priority.Value = 0;
         _currentCamera = CameraType.Standard;
-    }
-
-    /// <summary>
-    /// Shows the zoomed camera for conversation.
-    /// </summary>
-    public void ShowZoomCamera()
-    {
-        standardCamera.Priority.Value = 0;
-        zoomCamera.Priority.Value = 1;
-        obstructedViewCamera.Priority.Value = 0;
-        _currentCamera = CameraType.Zoom;
     }
 
     /// <summary>
@@ -78,6 +66,29 @@ public class CameraController : MonoBehaviour
     public CameraType GetCurrentCamera()
     {
         return _currentCamera;
+    }
+
+    public void ShowZoomBetween(Vector3 origin, Vector3 target)
+    {
+        var x = (origin.x + target.x) / 2;
+        var y = (origin.y + target.y) / 2;
+        var z = (origin.z + target.z) / 2;
+        var pos = new Vector3(x, y, z);
+        var middle = new GameObject();
+        middle.transform.position = pos;
+        zoomCamera.Follow = middle.transform;
+        ShowZoomCamera();
+    }
+
+    /// <summary>
+    /// Shows the zoomed camera for conversation.
+    /// </summary>
+    private void ShowZoomCamera()
+    {
+        standardCamera.Priority.Value = 0;
+        zoomCamera.Priority.Value = 1;
+        obstructedViewCamera.Priority.Value = 0;
+        _currentCamera = CameraType.Zoom;
     }
     
 }

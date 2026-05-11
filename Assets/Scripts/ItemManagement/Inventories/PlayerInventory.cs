@@ -23,7 +23,7 @@ public class PlayerInventory : Inventory
     {
         // Adds the type of inventory on this child of Inventory.
         var data = base.Serialize();
-        data.Add("inventory_type", "player");
+        data.Add("inventoryType", "player");
         return data;
     }
     
