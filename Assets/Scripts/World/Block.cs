@@ -29,7 +29,7 @@ public class Block
     /// <returns>An air block object.</returns>
     public static Block GetAirAt(World world, Vector3Int pos)
     {
-        return new Block(pos, world, ItemType.Air);
+        return new Block(pos, world, ItemType.Get(ItemType.Keys.Air));
     }
 
     public readonly World World;
@@ -51,7 +51,7 @@ public class Block
 
     public override string ToString()
     {
-        return Type.displayName + "[" + Position.x + "," + Position.y + "," + Position.z + "," + World.label +"]";
+        return Type.DisplayName + "[" + Position.x + "," + Position.y + "," + Position.z + "," + World.label +"]";
     }
     
 }

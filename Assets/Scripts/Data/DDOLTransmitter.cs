@@ -7,6 +7,9 @@ public class DDOLTransmitter : MonoBehaviour
     public static DDOLTransmitter Instance;
     private Dictionary<string, object> _playerTransfer;
     private Dictionary<string, object> _worldsTransfer;
+    // Used as a backup while database connection isn't guaranteed. TODO fallback save to system storage.
+    private string _titleIdTransfer;
+    private string _usernameTransfer;
 
     private void Awake()
     {
@@ -18,6 +21,42 @@ public class DDOLTransmitter : MonoBehaviour
 
         DontDestroyOnLoad(gameObject);
         Instance = this;
+    }
+
+    /// <summary>
+    /// Transfers a player's title id to be used between scenes.
+    /// </summary>
+    /// <param name="titleId">The title id to tranfer.</param>
+    public void TransferTitleId(string titleId)
+    {
+        _titleIdTransfer = titleId;
+    }
+
+    /// <summary>
+    /// Retrieves the transferred title id.
+    /// </summary>
+    /// <returns>The title id to transfer.</returns>
+    public string RetrieveTitleId()
+    {
+        return _titleIdTransfer;
+    }
+
+    /// <summary>
+    /// Transfers a username to be used between scenes.
+    /// </summary>
+    /// <param name="username">The username to transfer.</param>
+    public void TransferUsername(string username)
+    {
+        _usernameTransfer = username;
+    }
+
+    /// <summary>
+    /// Retrieves a transferred username.
+    /// </summary>
+    /// <returns>The transferred username.</returns>
+    public string RetrieveUsername()
+    {
+        return _usernameTransfer;
     }
 
     /// <summary>
