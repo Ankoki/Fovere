@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fcd19b51b53d4f5a91a947cf67c81c88, type: 3}
+  m_Name: FovereAuth
+  m_EditorClassIdentifier: Assembly-CSharp::Fovere.DialogueData
+  conversationBlock:
+  - Hey! <pause=0.5>I heard you wanted to learn more about our authentication system,
+    <pause=0.5>and how it works!
+  - "Fov\u0113re keeps game data and authentication data seperate, <pause=0.5>and
+    authentication we use is called PlayFab!"
+  - This helpful tool provides the developer with handy information, <pause=0.5>like
+    the amount of logins in a timespace, <pause=0.5>and the amount of registrations!
+  - We use the TitleId each account is given to link authentication to our backend,
+    <pause=0.5>but that is discussed further by a different resident! <pause=0.5>Go
+    find them!

@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fcd19b51b53d4f5a91a947cf67c81c88, type: 3}
+  m_Name: FovereIntro
+  m_EditorClassIdentifier: Assembly-CSharp::Fovere.DialogueData
+  conversationBlock:
+  - "Hey there! <pause=0.5>Welcome to Fov\u0113re! <pause=0.5><size=35>or atleast
+    it will be...</size>"
+  - This prototype only demonstrates some very basic systems implemented into the
+    game so far. <pause=0.5>Like this cool dialogue!
+  - Speak to different residents around to find out more about the systems implemented!
+    <pause=0.5>Each of us have new information for you.
+  - I hope you stay tuned to further progress with this game, <pause=0.5>a lot of
+    time went into all the systems, <pause=0.5>and we can't wait to see how it comes
+    along!
