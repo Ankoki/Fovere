@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fcd19b51b53d4f5a91a947cf67c81c88, type: 3}
+  m_Name: FovereInventory
+  m_EditorClassIdentifier: Assembly-CSharp::Fovere.DialogueData
+  conversationBlock:
+  - Hi. <pause=0.5>You may not know it, <pause=0.5>however you have an Inventory!
+    <pause=0.5>You aren't able to access it at this time, <pause=0.5>but there is
+    a system behind it.
+  - Every item you pick up in this game gets stored in your inventory. <pause=0.5>It's
+    a fixed set of slots, <pause=0.5>starting with 16. <pause=0.5>However, <pause=0.5>there
+    is implementation to allow you to expand your inventory as you progress the game!
+  - Each slot holds one type of item, <pause=0.5>and items can stack up to a maximum
+    amount. <pause=0.5>If a stack is already in your inventory, <pause=0.5>new items
+    will fill that stack before taking up a new slot.
+  - Removing items works in reverse! <pause=0.5>The system finds every stack of that
+    item and draws from them in order, <pause=0.5>until the requested amount has
+    been taken [or finds there aren't enough].
+  - Nothing gets silently deleted either! <pause=0.5>If the system tries to remove
+    more than you have, <pause=0.5>the whole operation is denied. <pause=0.5>You'll
+    never find an incorrect state in there!
+  - The inventory is also saved and restored between our sessions! <pause=0.5>If
+    you want more information on how we handle persistant data, <pause=0.5>find the
+    database resident! <pause=0.5>They'll tell you all about it.
+  - Thanks for talking to me! <pause=0.5>I love explaining this system. <pause=0.5>Maybe
+    go talking to other residents to find out more about the game.

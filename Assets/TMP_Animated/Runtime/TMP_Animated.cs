@@ -4,20 +4,6 @@ using UnityEngine.Events;
 
 namespace TMPro
 {
-    [System.Serializable]
-    public class ActionEvent : UnityEvent<string>
-    {
-    }
-
-    [System.Serializable]
-    public class TextRevealEvent : UnityEvent<char>
-    {
-    }
-
-    [System.Serializable]
-    public class DialogueFinishEvent : UnityEvent
-    {
-    }
 
     /// <summary>
     /// Class that extends from TextPro to be able to create our own animated dialogue.
@@ -34,12 +20,14 @@ namespace TMPro
         {
             return tag.StartsWith("speed=") || tag.StartsWith("pause=") || tag.StartsWith("action=");
         }
-        
-        [SerializeField] private float speed = 10;
-        private float speedModifier = 1;
-        public ActionEvent onAction;
-        public TextRevealEvent onReveal;
-        public DialogueFinishEvent onDialogueFinish;
+
+        [SerializeField] private float speed = 30;
+
+        private float _speedModifier = 1;
+
+        public event UnityAction<string> OnAction = delegate { };
+        public event UnityAction<char> OnReveal = delegate { };
+        public event UnityAction OnDialogueFinish = delegate {  };
 
         /// <summary>
         /// Reads the given text to the dialogue.
@@ -47,7 +35,7 @@ namespace TMPro
         /// <param name="text">The text to </param>
         public void ReadText(string text)
         {
-            text = string.Empty;
+            this.text = text;
             var subTexts = text.Split('<', '>');
             var displayText = "";
             for (var i = 0; i < subTexts.Length; i++)
@@ -57,14 +45,12 @@ namespace TMPro
                 else if (!IsCustomTag(subTexts[i].Replace(" ", "")))
                     displayText += $"<{subTexts[i]}>";
             }
-
-            text = displayText;
+            this.text = displayText;
             maxVisibleCharacters = 0;
-            speedModifier = 1;
+            _speedModifier = 1;
             StartCoroutine(Read(subTexts));
-            onDialogueFinish.Invoke();
         }
-        
+
         /// <summary>
         /// Enumerator used to read all text in the dialogue and parse all custom tags.
         /// </summary>
@@ -82,15 +68,16 @@ namespace TMPro
                 {
                     while (visibleCounter < subTexts[subCounter].Length)
                     {
-                        onReveal.Invoke(subTexts[subCounter][visibleCounter]);
+                        OnReveal.Invoke(subTexts[subCounter][visibleCounter]);
                         visibleCounter++;
                         maxVisibleCharacters++;
-                        yield return new WaitForSeconds(1f / speed * speedModifier);
+                        yield return new WaitForSeconds((1f / speed) / _speedModifier);
                     }
                     visibleCounter = 0;
                 }
                 subCounter++;
             }
+            OnDialogueFinish.Invoke();
             yield return null;
         }
         
@@ -99,7 +86,7 @@ namespace TMPro
         /// </summary>
         public void SpeedUp()
         {
-            speedModifier = 2;
+            _speedModifier = 2;
         }
 
         /// <summary>
@@ -109,14 +96,17 @@ namespace TMPro
         /// <returns>WaitForSeconds if pause tag </returns>
         private WaitForSeconds EvaluateTag(string tag)
         {
-            if (tag.Length > 0 && tag.StartsWith("pause="))
-                return new WaitForSeconds(float.Parse(tag.Split('=')[1]));
-            if (tag.Length <= 0)
-                return null;
+            switch (tag.Length)
+            {
+                case > 0 when tag.StartsWith("pause="):
+                    return new WaitForSeconds(float.Parse(tag.Split('=')[1]));
+                case <= 0:
+                    return null;
+            }
             if (tag.StartsWith("speed="))
                 speed = float.Parse(tag.Split("=")[1]);
             else if (tag.StartsWith("action="))
-                onAction.Invoke(tag.Split("=")[1]);
+                OnAction.Invoke(tag.Split("=")[1]);
             return null;
         }
 

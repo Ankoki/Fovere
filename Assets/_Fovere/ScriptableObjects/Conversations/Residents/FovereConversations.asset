@@ -1,0 +1,45 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fcd19b51b53d4f5a91a947cf67c81c88, type: 3}
+  m_Name: FovereConversations
+  m_EditorClassIdentifier: Assembly-CSharp::Fovere.DialogueData
+  conversationBlock:
+  - See that resident over there? <pause=0.5>Walk close enough to them and a prompt
+    will appear above their head, <pause=0.5>letting you know you can interact with
+    them. <pause=0.5>Isn't that cool?
+  - That prompt is always facing you, <pause=0.5>no matter where you stand. <pause=0.5>It
+    hides itself automatically while a conversation is already happening, <pause=0.5>so
+    you're never prompted to talk to someone who is already busy.
+  - Press the interact button [E] and the conversation begins. <pause=0.5>Both you
+    and the resident are frozen in place, <pause=0.5>and the resident turns to face
+    you before the dialogue fades in.
+  - Text doesn't just appear all at once as you can see! <pause=0.5>Each character
+    is revealed one by one, <pause=0.5>and you'll hear a little sound every few letters,
+    <pause=0.5>giving me my voice! <pause=0.5>Can you heaaaaar me?
+  - Sorry, <pause=0.5>sorry. <pause=0.5> I got carried away haha! <pause=0.5>Anyway!
+    <pause=0.5>Punctuation gets its own sound as well. <pause=0.5>The pitch of the
+    voice is changed randomly, <pause=0.5>allowing for each of us to have our own
+    sound!
+  - Dialogue is written in blocks, <pause=0.5>with support for custom tags! <pause=0.5>You
+    see how I wait before continuing after punctuation? <pause=0.5>Thats because
+    of our custom pause tag! <pause=0.5>I <pause=0.2>c<pause=0.2>a<pause=0.2>n <pause=0.2>g<pause=0.2>o
+    <pause=0.2>s<pause=0.2>l<pause=0.2>o<pause=0.2>w <pause=0.2>l<pause=0.2>i<pause=0.2>k<pause=0.2>e
+    <pause=0.2>t<pause=0.2>h<pause=0.2>i<pause=0.2>s<pause=0.2>!
+  - There are also action tags, <pause=0.5>which can trigger particles or camera
+    effects in a conversation! <pause=0.5>None of those are displayed here though.<pause=0.5>.<pause=0.5>.
+    <pause=0.5>
+  - When the last block finishes, <pause=0.5>one final press closes the dialogue.
+    <pause=0.5>The UI fades out, <pause=0.5>both me and you unfreeze, <pause=0.5>and
+    we go about our days!
+  - 'This is the last block, <pause=0.5>so you''ll get the idea in a second. <pause=0.5>If
+    you want any more information, <pause=0.5>go find some other residents! <pause=0.5>I''m
+    sure they''ve got interesting things to say. '
