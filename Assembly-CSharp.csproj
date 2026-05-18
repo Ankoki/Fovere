@@ -12,7 +12,7 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>10.0.20506</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <RootNamespace></RootNamespace>
+    <RootNamespace>Fovere</RootNamespace>
     <ProjectGuid>{d50c5b6c-0dbf-e754-0e9f-d8c6a83e593f}</ProjectGuid>
     <ProjectTypeGuids>{E097FAD1-6243-4DAD-9C02-E9B9EFC3FFC1};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <OutputType>Library</OutputType>
@@ -47,56 +47,65 @@
     <Analyzer Include="C:\Program Files\Unity\Hub\Editor\6000.4.0f1\Editor\Data\Tools\BuildPipeline\Unity.SourceGenerators\Unity.UIToolkit.SourceGenerator.dll" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Assets\Scripts\Player\PlayerHandler.cs" />
-    <Compile Include="Assets\Scripts\ItemManagement\InventoryHandler.cs" />
-    <Compile Include="Assets\Scripts\Player\Camera\CameraController.cs" />
+    <Compile Include="Assets\_Fovere\Scripts\Player\Data\InterestData.cs" />
+    <Compile Include="Assets\_Fovere\Scripts\Prototype\Player\Input\PlayerInputActions.cs" />
+    <Compile Include="Assets\_Fovere\Scripts\Player\Data\AbilitiesData.cs" />
+    <Compile Include="Assets\_Fovere\Scripts\Data\DatabaseAccessor.cs" />
+    <Compile Include="Assets\_Fovere\Scripts\Data\DataHelpers.cs" />
     <Compile Include="Assets\DOTween\Modules\DOTweenModuleUnityVersion.cs" />
-    <Compile Include="Assets\Scripts\Resident\Conversation\DialogueTrigger.cs" />
-    <Compile Include="Assets\Scripts\Game\GameManager.cs" />
+    <Compile Include="Assets\_Fovere\Scripts\Prototype\Conversation\DialogueData.cs" />
+    <Compile Include="Assets\_Fovere\Scripts\ItemManagement\Inventory.cs" />
     <Compile Include="Assets\TMP_Animated\Runtime\TMP_Animated.cs" />
-    <Compile Include="Assets\Scripts\World\Texture\MeshData.cs" />
+    <Compile Include="Assets\_Fovere\Scripts\ItemManagement\Inventories\PlayerInventory.cs" />
     <Compile Include="Assets\DOTween\Modules\DOTweenModulePhysics2D.cs" />
     <Compile Include="Assets\DOTween\Modules\DOTweenModuleUI.cs" />
-    <Compile Include="Assets\Scripts\Data\DataStorage.cs" />
-    <Compile Include="Assets\Scripts\World\Tables\SubsurfaceTerrainTable.cs" />
-    <Compile Include="Assets\Scripts\World\Generation\Generator.cs" />
-    <Compile Include="Assets\Scripts\Player\Data\PlayerData.cs" />
-    <Compile Include="Assets\Scripts\Player\Data\ExpansionData.cs" />
-    <Compile Include="Assets\Scripts\World\Block.cs" />
-    <Compile Include="Assets\Scripts\UI\UIUpdate.cs" />
-    <Compile Include="Assets\Scripts\World\Chunk.cs" />
-    <Compile Include="Assets\Scripts\Auth\PlayFabAuth.cs" />
-    <Compile Include="Assets\Scripts\Resident\ResidentHandler.cs" />
-    <Compile Include="Assets\Scripts\Player\Data\EconomyData.cs" />
-    <Compile Include="Assets\Scripts\Player\Data\QuestData.cs" />
-    <Compile Include="Assets\Scripts\World\Tables\WeightedTable.cs" />
-    <Compile Include="Assets\Scripts\ItemManagement\Inventories\PlayerInventory.cs" />
-    <Compile Include="Assets\Scripts\Player\Camera\BendingManager.cs" />
-    <Compile Include="Assets\Scripts\Data\DatabaseAccessor.cs" />
-    <Compile Include="Assets\Scripts\Player\Data\ProfessionData.cs" />
-    <Compile Include="Assets\Scripts\World\Texture\TextureArrayBuilder.cs" />
-    <Compile Include="Assets\Scripts\Player\Data\AbilitiesData.cs" />
-    <Compile Include="Assets\Scripts\UI\Auth\LoginView.cs" />
+    <Compile Include="Assets\_Fovere\Scripts\World\Generation\VillageGenerator.cs" />
+    <Compile Include="Assets\_Fovere\Scripts\Prototype\Conversation\ConversationHandler.cs" />
+    <Compile Include="Assets\_Fovere\Scripts\Data\DDOLTransmitter.cs" />
+    <Compile Include="Assets\_Fovere\Scripts\World\DirectionExtension.cs" />
+    <Compile Include="Assets\_Fovere\Scripts\World\Generation\Generator.cs" />
+    <Compile Include="Assets\_Fovere\Scripts\World\Block.cs" />
+    <Compile Include="Assets\_Fovere\Scripts\World\Direction.cs" />
+    <Compile Include="Assets\_Fovere\Scripts\Prototype\Player\PrototypeMovementController.cs" />
+    <Compile Include="Assets\_Fovere\Scripts\ItemManagement\InventoryHandler.cs" />
+    <Compile Include="Assets\_Fovere\Scripts\Player\Data\ExpansionData.cs" />
+    <Compile Include="Assets\_Fovere\Scripts\World\Chunk.cs" />
+    <Compile Include="Assets\_Fovere\Scripts\Prototype\Resident\PrototypeResidentNavigation.cs" />
+    <Compile Include="Assets\_Fovere\Scripts\World\Texture\TextureAtlas.cs" />
+    <Compile Include="Assets\_Fovere\Scripts\Prototype\Resident\PrototypeResidentHandler.cs" />
+    <Compile Include="Assets\_Fovere\Scripts\Player\Data\EconomyData.cs" />
+    <Compile Include="Assets\_Fovere\Scripts\UI\Auth\LoginView.cs" />
+    <Compile Include="Assets\_Fovere\Scripts\Player\Data\QuestData.cs" />
+    <Compile Include="Assets\_Fovere\Scripts\World\World.cs" />
+    <Compile Include="Assets\_Fovere\Scripts\Prototype\Player\Input\PrototypeInputReader.cs" />
+    <Compile Include="Assets\_Fovere\Scripts\ItemManagement\Item.cs" />
+    <Compile Include="Assets\_Fovere\Scripts\Data\DataStorage.cs" />
+    <Compile Include="Assets\_Fovere\Scripts\Prototype\Player\PrototypeColliderDetector.cs" />
     <Compile Include="Assets\TutorialInfo\Scripts\Readme.cs" />
-    <Compile Include="Assets\Scripts\Data\DDOLTransmitter.cs" />
-    <Compile Include="Assets\Scripts\World\World.cs" />
-    <Compile Include="Assets\Scripts\ItemManagement\Item.cs" />
+    <Compile Include="Assets\_Fovere\Scripts\Game\GameManager.cs" />
+    <Compile Include="Assets\_Fovere\Scripts\Player\Camera\BendingManager.cs" />
+    <Compile Include="Assets\_Fovere\Scripts\Prototype\Resident\PrototypeResidentManager.cs" />
     <Compile Include="Assets\DOTween\Modules\DOTweenModuleEPOOutline.cs" />
-    <Compile Include="Assets\Scripts\ItemManagement\ItemType.cs" />
+    <Compile Include="Assets\_Fovere\Scripts\Resident\Conversation\DialogueTrigger.cs" />
+    <Compile Include="Assets\_Fovere\Scripts\Player\Data\PlayerData.cs" />
+    <Compile Include="Assets\_Fovere\Scripts\UI\UIUpdate.cs" />
+    <Compile Include="Assets\_Fovere\Scripts\Auth\PlayFabAuth.cs" />
+    <Compile Include="Assets\_Fovere\Scripts\Prototype\Resident\Data\ResidentData.cs" />
+    <Compile Include="Assets\_Fovere\Scripts\Player\PlayerHandler.cs" />
     <Compile Include="Assets\DOTween\Modules\DOTweenModuleAudio.cs" />
-    <Compile Include="Assets\Scripts\World\Generation\VillageGenerator.cs" />
-    <Compile Include="Assets\Scripts\ItemManagement\Inventory.cs" />
+    <Compile Include="Assets\_Fovere\Scripts\Prototype\Player\PrototypePlayerController.cs" />
+    <Compile Include="Assets\_Fovere\Scripts\World\Texture\MeshData.cs" />
     <Compile Include="Assets\DOTween\Modules\DOTweenModulePhysics.cs" />
-    <Compile Include="Assets\Scripts\Player\Camera\RotationHandler.cs" />
+    <Compile Include="Assets\_Fovere\Scripts\Player\Camera\RotationHandler.cs" />
+    <Compile Include="Assets\_Fovere\Scripts\World\Tables\SubsurfaceTerrainTable.cs" />
     <Compile Include="Assets\DOTween\Modules\DOTweenModuleSprite.cs" />
-    <Compile Include="Assets\Scripts\Player\Data\InterestData.cs" />
-    <Compile Include="Assets\Scripts\World2\World.cs" />
-    <Compile Include="Assets\Scripts\Resident\Conversation\DialogueData.cs" />
-    <Compile Include="Assets\Scripts\Data\DataHelpers.cs" />
-    <Compile Include="Assets\Scripts\Resident\Data\ResidentData.cs" />
-    <Compile Include="Assets\Scripts\Resident\Conversation\ConversationHandler.cs" />
+    <Compile Include="Assets\_Fovere\Scripts\Player\Data\ProfessionData.cs" />
+    <Compile Include="Assets\_Fovere\Scripts\Player\Camera\CameraController.cs" />
+    <Compile Include="Assets\_Fovere\Scripts\World\Tables\WeightedTable.cs" />
+    <Compile Include="Assets\ByeolTools\Setup.cs" />
     <Compile Include="Assets\DOTween\Modules\DOTweenModuleUIToolkit.cs" />
     <Compile Include="Assets\DOTween\Modules\DOTweenModuleUtils.cs" />
+    <Compile Include="Assets\_Fovere\Scripts\ItemManagement\ItemType.cs" />
     <None Include="Assets\TextMesh Pro\Shaders\TMPro.cginc" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Mobile Overlay.shader" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Mobile-2-Pass.shader" />
@@ -552,6 +561,9 @@
     <Reference Include="System.Runtime.CompilerServices.Unsafe">
       <HintPath>D:\UnityProjects\Fovere\Library\PackageCache\com.unity.collections@538ace9075bc\Unity.Collections.Tests\System.Runtime.CompilerServices.Unsafe\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
     </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>D:\UnityProjects\Fovere\Library\PackageCache\com.unity.nuget.newtonsoft-json@4dfd81071c64\Runtime\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="netstandard">
       <HintPath>C:\Program Files\Unity\Hub\Editor\6000.4.0f1\Editor\Data\NetStandard\ref\2.1.0\netstandard.dll</HintPath>
     </Reference>
@@ -933,6 +945,9 @@
     <Reference Include="Unity.Rendering.LightTransport.Editor">
       <HintPath>D:\UnityProjects\Fovere\Library\ScriptAssemblies\Unity.Rendering.LightTransport.Editor.dll</HintPath>
     </Reference>
+    <Reference Include="Unity.Services.Core">
+      <HintPath>D:\UnityProjects\Fovere\Library\ScriptAssemblies\Unity.Services.Core.dll</HintPath>
+    </Reference>
     <Reference Include="Unity.AI.Navigation">
       <HintPath>D:\UnityProjects\Fovere\Library\ScriptAssemblies\Unity.AI.Navigation.dll</HintPath>
     </Reference>
@@ -990,6 +1005,9 @@
     <Reference Include="Unity.Cinemachine.Editor">
       <HintPath>D:\UnityProjects\Fovere\Library\ScriptAssemblies\Unity.Cinemachine.Editor.dll</HintPath>
     </Reference>
+    <Reference Include="Unity.Services.Core.Components">
+      <HintPath>D:\UnityProjects\Fovere\Library\ScriptAssemblies\Unity.Services.Core.Components.dll</HintPath>
+    </Reference>
     <Reference Include="Unity.UnifiedRayTracing.Runtime">
       <HintPath>D:\UnityProjects\Fovere\Library\ScriptAssemblies\Unity.UnifiedRayTracing.Runtime.dll</HintPath>
     </Reference>
@@ -998,6 +1016,9 @@
     </Reference>
     <Reference Include="Unity.Rider.Editor">
       <HintPath>D:\UnityProjects\Fovere\Library\ScriptAssemblies\Unity.Rider.Editor.dll</HintPath>
+    </Reference>
+    <Reference Include="Unity.Services.Core.Analytics">
+      <HintPath>D:\UnityProjects\Fovere\Library\ScriptAssemblies\Unity.Services.Core.Analytics.dll</HintPath>
     </Reference>
     <Reference Include="Unity.AI.Navigation.Editor.ConversionSystem">
       <HintPath>D:\UnityProjects\Fovere\Library\ScriptAssemblies\Unity.AI.Navigation.Editor.ConversionSystem.dll</HintPath>
@@ -1052,6 +1073,9 @@
     </Reference>
     <Reference Include="Unity.Multiplayer.Center.Common">
       <HintPath>D:\UnityProjects\Fovere\Library\ScriptAssemblies\Unity.Multiplayer.Center.Common.dll</HintPath>
+    </Reference>
+    <Reference Include="Unity.Services.Core.Environments">
+      <HintPath>D:\UnityProjects\Fovere\Library\ScriptAssemblies\Unity.Services.Core.Environments.dll</HintPath>
     </Reference>
     <Reference Include="Unity.Burst">
       <HintPath>D:\UnityProjects\Fovere\Library\ScriptAssemblies\Unity.Burst.dll</HintPath>

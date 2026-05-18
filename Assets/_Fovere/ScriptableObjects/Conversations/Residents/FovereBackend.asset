@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fcd19b51b53d4f5a91a947cf67c81c88, type: 3}
+  m_Name: FovereBackend
+  m_EditorClassIdentifier: Assembly-CSharp::Fovere.DialogueData
+  conversationBlock:
+  - Hello, <pause=0.5>I heard you wanted to learn more about how our backend functions!
+    <pause=0.5>Lets dive in.
+  - First we will speak on our database. <pause=0.5>This project uses a PostgreSQL
+    database,<pause=0.5> utilising their Jsonb data type.
+  - We use Json for data storage as it is easily readable, <pause=0.5>allowing for
+    any mistakes made during serialisation easily spottable. <pause=0.5>Lets dive
+    in further to Jsonb...
+  - Jsonb is very similar to PostgreSQL's Json data type, <pause=0.5>however there
+    are differences. <pause=0.5>The Jsonb type is stored in a decomposed binary format!
+  - This means that it will be slower to input due to conversion overhead, <pause=0.5>however
+    it is significantly faster to process, <pause=0.5>as no reparsing is needed!
+    <pause=0.5>Jsonb also supports indexing.
+  - Now lets touch on our backend. <pause=0.5>To limit connections to our database,
+    <pause=0.5>we utilise a REST-API created in javascript.
+  - This REST-API requires authentication tokens for each request, <pause=0.5>and
+    supports the retrieval of any data linked to the PlayFab titleId provided! <pause=0.5>Some
+    requests also take extra parameters.
+  - If PlayFab didn't ring a bell for you, <pause=0.5>maybe you should try and find
+    the resident here to inform you about our authentication system! <pause=0.5>Thank
+    you for listening.

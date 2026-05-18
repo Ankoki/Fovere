@@ -1,0 +1,46 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fcd19b51b53d4f5a91a947cf67c81c88, type: 3}
+  m_Name: FovereProceduralGeneration
+  m_EditorClassIdentifier: Assembly-CSharp::Fovere.DialogueData
+  conversationBlock:
+  - Hi<pause=0.1>.<pause=0.1>.<pause=0.1>. <pause=0.5>Are you here to learn more
+    about different systems? <pause=0.5>Because I have a very interesting system
+    to tell you about! <pause=0.5>Procedural Terrain Generation!
+  - Oh<pause=0.1>.<pause=0.1>.<pause=0.1>. <pause=0.5>You don't know what that is?
+    <pause=0.5>That's okay! <pause=0.5>Lets start at the beginning.
+  - It is important to first note the world we are standing in is not procedurally
+    generated. <pause=0.5>The system is not linked to the prototype, <pause=0.5>however
+    will be in the final game!
+  - Our world wont be hand-crafted, <pause=0.5>it'll all be done procedurally! <pause=0.5>This
+    means that the terrain will be built by an algorithm at runtime. <pause=0.5>(More
+    specifically, <pause=0.5>when you create an account!)
+  - Our world is split into chunks, <pause=0.5>which is a fixed size section of blocks.
+    <pause=0.5>Only the chunks around you will get loaded, <pause=0.5>which keeps
+    everything running smoothly, <pause=0.5>even with a massive world!
+  - At world creation, <pause=0.5>a seed is assigned. <pause=0.5>This makes it so
+    that every world is different! <pause=0.5>Though if two worlds have the same
+    seed, <pause=0.5>they'll be indentical.
+  - 'The foundation of this is Perlin noise. <pause=0.5>This is a mathematical function
+    that produces random values that are smooth and nautral looking. <pause=0.5>It''s
+    perfect for emulating the shape of real world terrain! '
+  - Our generator allows us to walk over every chunk, <pause=0.5>and obtains the
+    perlin noise at the given coordinates. <pause=0.5>This noise determines how high
+    the block should be!
+  - 'Once every block is drawn, <pause=0.5>we use a technique called greedy meshing
+    for rendering our chunks. <pause=0.5>Instead of drawing each face individually,
+    <pause=0.5>adjacent faces with the same texture get merged into one big quad! '
+  - Chunks are rebuilt asynchronously, <pause=0.5>so when a block changes, <pause=0.5>the
+    mesh recalculates in the background without freezing the game! <pause=0.5>The
+    chunks with changes are marked as 'dirty', <pause=0.5>and will be until rebuilt.
+  - Theres alot that goes on behind the scenes, <pause=0.5>but from where you will
+    be standing, <pause=0.5>it'll look just like a world.
