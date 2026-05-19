@@ -19,7 +19,7 @@ namespace Fovere
         private const string UpdateWorldEndpoint = "update-world";
         private const string GetWorldEndpoint = "get-world";
         private const string GetWorldsEndpoint = "get-worlds";
-        private const string DatabaseToken = "JG#6eP4pfHwfkdTF59wcNsazipzi4cThX^/cHx2kn#c=";
+        private const string DatabaseToken = "JG#6eP4pfHwfkdTF59wcNsazipzi4cThX^/cHx2kn#c="; // Regenerated on API end. Not in use for prototype.
 
         private static readonly Dictionary<long, string> FetchUserErrors = new()
         {
